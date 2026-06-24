@@ -1,0 +1,24 @@
+{
+  "name": "@workspace/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate --schema ./prisma/schema.prisma",
+    "push": "node --env-file=../../.env ../../node_modules/prisma/build/index.js db push --schema ./prisma/schema.prisma",
+    "seed": "node --env-file=../../.env ./scripts/seed.mjs",
+    "postinstall": "prisma generate --schema ./prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/pg": "^8.20.0",
+    "prisma": "^6.19.0"
+  }
+}

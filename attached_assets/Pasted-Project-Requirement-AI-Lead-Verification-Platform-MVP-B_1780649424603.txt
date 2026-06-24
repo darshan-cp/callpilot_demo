@@ -1,0 +1,423 @@
+Project Requirement: AI Lead Verification Platform (MVP)
+
+Build a production-ready SaaS web application using the latest React ecosystem and modern best practices.
+
+Tech Stack
+Frontend
+React 19+
+TypeScript
+Vite
+React Router
+TanStack Query
+React Hook Form + Zod
+Tailwind CSS
+ShadCN/UI
+Lucide Icons
+Backend
+Node.js (Latest LTS)
+Express.js
+TypeScript
+JWT Authentication
+REST API Architecture
+Database
+PostgreSQL
+Prisma ORM
+State Management
+Zustand
+Deployment Ready
+Docker support
+Environment variables
+Production build configuration
+Authentication Requirements
+Login Only System
+
+This MVP should NOT have:
+
+Registration Page
+Sign Up
+Forgot Password
+Social Login
+Email Verification
+
+Only provide:
+
+Login Page
+
+Fields:
+
+Username / Email
+Password
+
+Features:
+
+Browser autofill support for username and password
+Remember Me checkbox
+Show/Hide Password
+Form validation
+Loading state
+Error handling
+
+Example:
+
+<input
+  autoComplete="username"
+/>
+
+<input
+  type="password"
+  autoComplete="current-password"
+/>
+Security
+JWT Authentication
+Protected Routes
+Session Persistence
+Auto Logout on Token Expiration
+Access Control
+
+If user is not logged in:
+
+Redirect to Login Page
+No page should be accessible directly via URL
+
+Example:
+
+/login     -> Public
+
+/dashboard -> Protected
+/leads     -> Protected
+/results   -> Protected
+/settings  -> Protected
+Application Goal
+
+Upload an Excel file containing leads.
+
+The system will:
+
+Import Excel
+Display uploaded leads
+Trigger AI verification calling workflow
+Store results
+Display classification results
+Export results
+Main Application Layout
+Sidebar Navigation
+Dashboard
+Upload Leads
+Campaigns
+Results
+Call Logs
+Settings
+Logout
+Header
+User Avatar
+User Name
+Notifications
+Search
+Dashboard Page
+
+Show summary cards:
+
+Statistics
+Total Leads
+Pending Calls
+Verified Contacts
+Voicemail
+Wrong Contacts
+Company Mismatch
+Invalid Numbers
+Charts
+Verification Status Chart
+Daily Calls Chart
+Success Rate Chart
+Lead Upload Page
+Excel Upload
+
+Drag & Drop uploader
+
+Supported:
+
+.xlsx
+.xls
+.csv
+
+Columns:
+
+First Name	Last Name	Company	Phone Number
+Validation
+
+Required:
+
+First Name
+Last Name
+Company
+Phone Number
+
+Show upload preview before import.
+
+Campaign Configuration Page
+
+Allow user to configure:
+
+Calling Window
+Time Zone
+Start Time
+End Time
+Campaign Settings
+Calls Per Minute
+Retry Attempts
+Retry Delay
+
+Example:
+
+Timezone: US Eastern
+
+Start: 9 AM
+End: 5 PM
+
+Calls Per Minute: 10
+Retries: 2
+AI Call Verification Workflow
+Scenario A
+
+Lead does not answer.
+
+Result:
+
+Voicemail
+Scenario B
+
+Correct Person + Correct Company
+
+Agent:
+
+"Am I speaking with John Smith?"
+
+Prospect:
+
+"Yes"
+
+Agent:
+
+"Are you currently working with ABC Inc?"
+
+Prospect:
+
+"Yes"
+
+Result:
+
+Verified Contact
+Scenario C
+
+Wrong Person
+
+Agent:
+
+"Am I speaking with John Smith?"
+
+Prospect:
+
+"No"
+
+Result:
+
+Wrong Contact
+Scenario D
+
+Company Mismatch
+
+Agent:
+
+"Are you currently working with ABC Inc?"
+
+Prospect:
+
+"No, I work for XYZ"
+
+Result:
+
+Company Mismatch
+Scenario E
+
+Invalid Number
+
+Result:
+
+Invalid Number
+Results Page
+
+Display data table.
+
+Columns:
+
+Lead	Company	Phone	Status
+John Smith	ABC	xxx	Verified
+Mike Doe	XYZ	xxx	Voicemail
+
+Features:
+
+Pagination
+Search
+Filters
+Sorting
+Export
+Lead Detail Page
+
+When clicking a row:
+
+Show:
+
+Lead Information
+Name
+Company
+Phone
+Call Summary
+Call Duration
+AI Classification
+Transcript
+Recording URL
+Confidence Score
+
+Example:
+
+Confidence Score:
+98%
+Export Functionality
+
+Export:
+
+CSV
+XLSX
+
+Allow filtering by:
+
+Verified
+Voicemail
+Wrong Contact
+Company Mismatch
+Invalid Number
+Design Requirements
+
+Create a modern SaaS dashboard similar to:
+
+Stripe
+Linear
+HubSpot
+Salesforce
+Airtable
+
+Requirements:
+
+Clean UI
+Professional appearance
+Fully responsive
+Desktop-first
+Mobile-friendly
+Dark Mode
+Light Mode
+
+Use:
+
+Cards
+Data Tables
+Modals
+Drawers
+Toast Notifications
+Skeleton Loaders
+Folder Structure
+
+Use enterprise-grade folder organization.
+
+src/
+│
+├── app/
+├── routes/
+├── pages/
+│   ├── Dashboard/
+│   ├── Login/
+│   ├── Leads/
+│   ├── Campaigns/
+│   ├── Results/
+│
+├── components/
+│   ├── ui/
+│   ├── forms/
+│   ├── tables/
+│   ├── charts/
+│   ├── layouts/
+│
+├── services/
+│
+├── hooks/
+│
+├── store/
+│
+├── types/
+│
+├── utils/
+│
+├── constants/
+│
+├── assets/
+│
+└── styles/
+Coding Standards
+
+Follow latest React and TypeScript best practices:
+
+Naming
+
+Components:
+
+LeadUploadPage.tsx
+CampaignSettingsPage.tsx
+ResultsTable.tsx
+
+Hooks:
+
+useAuth.ts
+useCampaigns.ts
+
+Services:
+
+authService.ts
+leadService.ts
+campaignService.ts
+
+Types:
+
+Lead.ts
+Campaign.ts
+User.ts
+
+Variables:
+
+const campaignSettings
+const uploadedLeads
+const verificationResults
+
+Avoid:
+
+const data
+const obj
+const temp
+Deliverables
+Complete UI/UX Design
+Responsive Layout
+Authentication System
+Protected Routes
+Login Autofill Support
+Dashboard
+Lead Upload Flow
+Campaign Management UI
+Results Management UI
+Export Functionality
+TypeScript Throughout
+Production Ready Architecture
+Clean Code Following SOLID Principles
+Reusable Components
+Accessibility Best Practices
+SEO Friendly Structure
+Enterprise-Level Folder Structure
+
+Generate the complete project structure, page wireframes, reusable component architecture, routing architecture, authentication flow, and production-ready React + TypeScript codebase setup.

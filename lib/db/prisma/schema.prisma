@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  slug                   String   @unique
+  isActive               Boolean  @default(true) @map("is_active")
+  telephonyAssistantId   String?  @map("telephony_assistant_id")
+  telephonyPhoneNumberId String?  @map("telephony_phone_number_id")
+  telephonyApiKey        String?  @map("telephony_api_key")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  users       User[]
+  campaigns   Campaign[]
+  leads       Lead[]
+  callResults CallResult[]
+
+  @@map("companies")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  companyId    Int      @map("company_id")
+  username     String   @unique
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("agent")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("users")
+}
+
+model Campaign {
+  id                  Int      @id @default(autoincrement())
+  companyId           Int      @map("company_id")
+  name                String
+  service             String?
+  status              String   @default("draft")
+  timezone            String   @default("America/New_York")
+  startTime           String   @default("09:00") @map("start_time")
+  endTime             String   @default("17:00") @map("end_time")
+  callsPerMinute      Int      @default(10) @map("calls_per_minute")
+  concurrentCallLimit Int      @default(10) @map("concurrent_call_limit")
+  retryAttempts       Int      @default(2) @map("retry_attempts")
+  retryDelay          Int      @default(30) @map("retry_delay")
+  retryStrategy       Json?    @map("retry_strategy")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  company     Company      @relation(fields: [companyId], references: [id])
+  leads       Lead[]
+  callResults CallResult[]
+
+  @@map("campaigns")
+}
+
+model Lead {
+  id             Int      @id @default(autoincrement())
+  companyId      Int      @map("company_id")
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  company        String
+  phoneNumber    String   @map("phone_number")
+  status         String   @default("pending")
+  service        String?
+  retryCount     Int      @default(0) @map("retry_count")
+  externalCallId String?  @map("external_call_id")
+  campaignId     Int?     @map("campaign_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+
+  organization Company     @relation(fields: [companyId], references: [id])
+  campaign     Campaign?   @relation(fields: [campaignId], references: [id])
+  callResults CallResult[]
+
+  @@map("leads")
+}
+
+model CallResult {
+  id               Int      @id @default(autoincrement())
+  companyId        Int      @map("company_id")
+  leadId           Int      @map("lead_id")
+  campaignId       Int?     @map("campaign_id")
+  externalCallId   String?  @map("external_call_id")
+  status           String
+  humanDetected    Boolean? @map("human_detected")
+  endedReason      String?  @map("ended_reason")
+  callSummary      String?  @map("call_summary")
+  callDuration     Int?     @map("call_duration")
+  callCost         Float?   @map("call_cost")
+  aiClassification String?  @map("ai_classification")
+  transcript       String?
+  recordingUrl     String?  @map("recording_url")
+  confidenceScore  Float?   @map("confidence_score")
+  calledAt         DateTime @default(now()) @map("called_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  organization Company  @relation(fields: [companyId], references: [id])
+  lead         Lead     @relation(fields: [leadId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@map("call_results")
+}

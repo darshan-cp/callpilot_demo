@@ -1,0 +1,29 @@
+{
+  "name": "leadverify-ai",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "artifacts/*",
+    "lib/*",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "npm run typecheck && npm run build --workspaces --if-present",
+    "dev": "npm run dev -w @workspace/lead-verify",
+    "dev:api": "npm run dev -w @workspace/api-server",
+    "db:push": "npm run push -w @workspace/db",
+    "db:generate": "npm run generate -w @workspace/db",
+    "db:seed": "npm run seed -w @workspace/db",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "npm run typecheck:libs && npm run typecheck -w @workspace/lead-verify -w @workspace/api-server -w @workspace/mockup-sandbox -w @workspace/scripts"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0",
+    "esbuild": "0.27.3"
+  }
+}

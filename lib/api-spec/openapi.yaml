@@ -1,0 +1,1543 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: AI Lead Verification Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: leads
+    description: Lead management
+  - name: campaigns
+    description: Campaign configuration
+  - name: results
+    description: Verification results
+  - name: dashboard
+    description: Dashboard statistics
+  - name: search
+    description: Global search
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCurrentUser
+      tags: [auth]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Username or email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/change-password:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change current user password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized or incorrect current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      summary: List all leads with filters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [firstName, company, phoneNumber, status, campaignName, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: Paginated leads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadListResponse"
+
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a single lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadInput"
+      responses:
+        "201":
+          description: Created lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /leads/export:
+    get:
+      operationId: exportLeads
+      tags: [leads]
+      summary: Export leads as CSV data
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json]
+            default: csv
+      responses:
+        "200":
+          description: Export payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResponse"
+
+  /leads/import:
+    post:
+      operationId: importLeads
+      tags: [leads]
+      summary: Bulk import leads from parsed file data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadImportInput"
+      responses:
+        "201":
+          description: Import summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadImportResult"
+
+  /leads/requeue:
+    post:
+      operationId: requeueLeads
+      tags: [leads]
+      summary: Requeue leads for verification (bulk or by filter)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadRequeueInput"
+      responses:
+        "200":
+          description: Requeue summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadRequeueResult"
+
+  /leads/assign-campaign:
+    post:
+      operationId: assignLeadsCampaign
+      tags: [leads]
+      summary: Bulk assign leads to a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadAssignCampaignInput"
+      responses:
+        "200":
+          description: Assignment summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadAssignCampaignResult"
+
+  /leads/delete-bulk:
+    post:
+      operationId: deleteLeadsBulk
+      tags: [leads]
+      summary: Bulk delete leads (by selection or filter)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadBulkDeleteInput"
+      responses:
+        "200":
+          description: Delete summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadBulkDeleteResult"
+
+  /leads/{id}:
+    get:
+      operationId: getLead
+      tags: [leads]
+      summary: Get a lead by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lead detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeadDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteLead
+      tags: [leads]
+      summary: Delete a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /leads/{id}/call:
+    post:
+      operationId: triggerLeadCall
+      tags: [leads]
+      summary: Trigger AI verification call for a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Call triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      summary: List all campaigns
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a new campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignInput"
+      responses:
+        "201":
+          description: Created campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      summary: Get a campaign by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignUpdate"
+      responses:
+        "200":
+          description: Updated campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+    delete:
+      operationId: deleteCampaign
+      tags: [campaigns]
+      summary: Delete a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /campaigns/{id}/start:
+    post:
+      operationId: startCampaign
+      tags: [campaigns]
+      summary: Start a campaign (begin calling)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /campaigns/{id}/pause:
+    post:
+      operationId: pauseCampaign
+      tags: [campaigns]
+      summary: Pause a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign paused
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /results:
+    get:
+      operationId: listResults
+      tags: [results]
+      summary: List verification results with filters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [firstName, company, phoneNumber, status, confidenceScore, calledAt]
+            default: calledAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: Paginated results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultListResponse"
+
+  /results/export:
+    get:
+      operationId: exportResults
+      tags: [results]
+      summary: Export results as CSV data
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json]
+            default: csv
+      responses:
+        "200":
+          description: Export data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResponse"
+
+  /results/{id}:
+    get:
+      operationId: getResult
+      tags: [results]
+      summary: Get a single result with full call detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Full result detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/daily-calls:
+    get:
+      operationId: getDailyCalls
+      tags: [dashboard]
+      summary: Get daily call counts for chart
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Daily call data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyCallData"
+
+  /dashboard/status-breakdown:
+    get:
+      operationId: getStatusBreakdown
+      tags: [dashboard]
+      summary: Get verification status breakdown for pie chart
+      responses:
+        "200":
+          description: Status breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatusBreakdown"
+
+  /dashboard/live-activity:
+    get:
+      operationId: getLiveActivity
+      tags: [dashboard]
+      summary: Get live campaign dialer and call activity
+      responses:
+        "200":
+          description: Live activity snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveActivity"
+
+  /dashboard/funnel:
+    get:
+      operationId: getVerificationFunnel
+      tags: [dashboard]
+      summary: Get lead verification funnel stages
+      responses:
+        "200":
+          description: Verification funnel counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationFunnel"
+
+  /dashboard/campaign-stats:
+    get:
+      operationId: getCampaignDashboardStats
+      tags: [dashboard]
+      summary: Get per-campaign performance metrics
+      responses:
+        "200":
+          description: Campaign performance rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignDashboardStat"
+
+  /search:
+    get:
+      operationId: globalSearch
+      tags: [search]
+      summary: Search leads, results, and call logs
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+            maximum: 10
+      responses:
+        "200":
+          description: Grouped search hits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalSearchData"
+
+  /call-logs:
+    get:
+      operationId: listCallLogs
+      tags: [results]
+      summary: List all call logs
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: leadId
+          in: query
+          schema:
+            type: integer
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [firstName, phoneNumber, humanDetected, status, callDuration, endedReason, campaignName, calledAt]
+            default: calledAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: Paginated call logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallLogListResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        rememberMe:
+          type: boolean
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, username, name, email, role, companyId]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        companyId:
+          type: integer
+        companyName:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+
+    ChangePasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 6
+
+    Lead:
+      type: object
+      required: [id, firstName, lastName, company, phoneNumber, status, createdAt]
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+          enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        campaignId:
+          type: ["integer", "null"]
+        campaignName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    LeadDetail:
+      type: object
+      required: [id, firstName, lastName, company, phoneNumber, status, createdAt]
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+        campaignId:
+          type: ["integer", "null"]
+        campaignName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        callResult:
+          $ref: "#/components/schemas/CallResult"
+
+    CallResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        callDuration:
+          type: ["integer", "null"]
+        aiClassification:
+          type: ["string", "null"]
+        transcript:
+          type: ["string", "null"]
+        recordingUrl:
+          type: ["string", "null"]
+        confidenceScore:
+          type: ["number", "null"]
+        calledAt:
+          type: ["string", "null"]
+
+    LeadInput:
+      type: object
+      required: [firstName, lastName, company, phoneNumber]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        campaignId:
+          type: integer
+
+    LeadImportInput:
+      type: object
+      required: [leads]
+      properties:
+        leads:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeadInput"
+        campaignId:
+          type: integer
+
+    LeadImportResult:
+      type: object
+      required: [imported, failed, skipped, total]
+      properties:
+        imported:
+          type: integer
+        failed:
+          type: integer
+        skipped:
+          type: integer
+          description: Leads skipped because phone number already exists
+        total:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    LeadRequeueInput:
+      type: object
+      properties:
+        leadIds:
+          type: array
+          items:
+            type: integer
+        allFiltered:
+          type: boolean
+          description: When true, requeue all leads matching the filter fields below
+        search:
+          type: string
+        status:
+          type: string
+          enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        campaignId:
+          type: integer
+
+    LeadRequeueResult:
+      type: object
+      required: [requeued, skipped, total]
+      properties:
+        requeued:
+          type: integer
+        skipped:
+          type: integer
+          description: Leads skipped (e.g. currently on a call)
+        total:
+          type: integer
+
+    LeadAssignCampaignInput:
+      type: object
+      required: [targetCampaignId]
+      properties:
+        targetCampaignId:
+          type: integer
+          description: Campaign to assign selected or filtered leads to
+        leadIds:
+          type: array
+          items:
+            type: integer
+        allFiltered:
+          type: boolean
+          description: When true, assign all leads matching the filter fields below
+        search:
+          type: string
+        status:
+          type: string
+          enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        campaignId:
+          type: integer
+          description: Filter by current campaign
+
+    LeadAssignCampaignResult:
+      type: object
+      required: [assigned, skipped, total]
+      properties:
+        assigned:
+          type: integer
+        skipped:
+          type: integer
+          description: Leads skipped (e.g. currently on a call)
+        total:
+          type: integer
+
+    LeadBulkDeleteInput:
+      type: object
+      properties:
+        leadIds:
+          type: array
+          items:
+            type: integer
+        allFiltered:
+          type: boolean
+          description: When true, delete all leads matching the filter fields below (or all leads when no filters)
+        search:
+          type: string
+        status:
+          type: string
+          enum: [pending, calling, verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        campaignId:
+          type: integer
+
+    LeadBulkDeleteResult:
+      type: object
+      required: [deleted, skipped, total]
+      properties:
+        deleted:
+          type: integer
+        skipped:
+          type: integer
+          description: Leads skipped (e.g. currently on a call)
+        total:
+          type: integer
+
+    LeadListResponse:
+      type: object
+      required: [leads, total, page, limit]
+      properties:
+        leads:
+          type: array
+          items:
+            $ref: "#/components/schemas/Lead"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    Campaign:
+      type: object
+      required: [id, name, status, timezone, startTime, endTime, callsPerMinute, concurrentCallLimit, retryAttempts, retryDelay, retryStrategy, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, completed]
+        timezone:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        callsPerMinute:
+          type: integer
+        concurrentCallLimit:
+          type: integer
+        retryAttempts:
+          type: integer
+        retryDelay:
+          type: integer
+        retryStrategy:
+          $ref: "#/components/schemas/RetryStrategy"
+        totalLeads:
+          type: integer
+        processedLeads:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    CampaignInput:
+      type: object
+      required: [name, timezone, startTime, endTime, callsPerMinute, concurrentCallLimit, retryStrategy]
+      properties:
+        name:
+          type: string
+        timezone:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        callsPerMinute:
+          type: integer
+        concurrentCallLimit:
+          type: integer
+        retryAttempts:
+          type: integer
+        retryDelay:
+          type: integer
+        retryStrategy:
+          $ref: "#/components/schemas/RetryStrategy"
+
+    CampaignUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        timezone:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        callsPerMinute:
+          type: integer
+        concurrentCallLimit:
+          type: integer
+        retryAttempts:
+          type: integer
+        retryDelay:
+          type: integer
+        retryStrategy:
+          $ref: "#/components/schemas/RetryStrategy"
+
+    RetryRule:
+      type: object
+      required: [id, delayValue, delayUnit, timeRule]
+      properties:
+        id:
+          type: string
+        delayValue:
+          type: integer
+        delayUnit:
+          type: string
+          enum: [minutes, hours, days, weeks]
+        timeRule:
+          type: string
+          enum: [same_day, next_day, same_time, different_time, business_hours_only]
+        fixedTime:
+          type: string
+        timeOffsetHours:
+          type: integer
+
+    RetryStrategy:
+      type: object
+      required: [retryType, maxAttempts, businessDaysOnly, timeRotation, schedule, frequency, timePreference, allowedDays, stopConditions]
+      properties:
+        retryType:
+          type: string
+          enum: [fixed_delay, custom_schedule, smart_schedule]
+        maxAttempts:
+          type: integer
+        businessDaysOnly:
+          type: boolean
+        timeRotation:
+          type: boolean
+        schedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetryRule"
+        frequency:
+          type: string
+          enum: [same_day, next_day, alternate_day, every_x_days, weekly, monthly, custom_cron]
+        frequencyDays:
+          type: integer
+        cronExpression:
+          type: string
+        timePreference:
+          type: string
+          enum: [same_time, random_in_window, fixed_time, different_time, ai_predicted]
+        fixedRetryTime:
+          type: string
+        allowedDays:
+          type: array
+          items:
+            type: integer
+        stopConditions:
+          type: array
+          items:
+            type: string
+            enum: [answered, callback_requested, voicemail_detected, dnc, max_attempts, lead_status_changed]
+
+    ResultDetail:
+      type: object
+      required: [id, leadId, firstName, lastName, company, phoneNumber, status, calledAt]
+      properties:
+        id:
+          type: integer
+        leadId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+          enum: [verified, voicemail, wrong_contact, company_mismatch, invalid_number]
+        callDuration:
+          type: ["integer", "null"]
+        aiClassification:
+          type: ["string", "null"]
+        transcript:
+          type: ["string", "null"]
+        recordingUrl:
+          type: ["string", "null"]
+        confidenceScore:
+          type: ["number", "null"]
+        calledAt:
+          type: string
+        campaignId:
+          type: ["integer", "null"]
+        campaignName:
+          type: ["string", "null"]
+
+    ResultListResponse:
+      type: object
+      required: [results, total, page, limit]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResultDetail"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    ExportResponse:
+      type: object
+      required: [data, filename]
+      properties:
+        data:
+          type: string
+        filename:
+          type: string
+        count:
+          type: integer
+
+    DashboardStats:
+      type: object
+      required: [totalLeads, pendingCalls, verifiedContacts, voicemail, wrongContacts, companyMismatch, invalidNumbers, successRate]
+      properties:
+        totalLeads:
+          type: integer
+        pendingCalls:
+          type: integer
+        verifiedContacts:
+          type: integer
+        realPersons:
+          type: integer
+        voicemail:
+          type: integer
+        wrongContacts:
+          type: integer
+        companyMismatch:
+          type: integer
+        invalidNumbers:
+          type: integer
+        successRate:
+          type: number
+        activeCampaigns:
+          type: integer
+
+    DailyCallData:
+      type: object
+      required: [date, calls, verified, failed]
+      properties:
+        date:
+          type: string
+        calls:
+          type: integer
+        verified:
+          type: integer
+        failed:
+          type: integer
+
+    StatusBreakdown:
+      type: object
+      required: [status, count, percentage]
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+
+    VerificationFunnel:
+      type: object
+      required: [totalLeads, called, realPersons, verified]
+      properties:
+        totalLeads:
+          type: integer
+        called:
+          type: integer
+        realPersons:
+          type: integer
+        verified:
+          type: integer
+
+    CampaignDashboardStat:
+      type: object
+      required: [id, name, status, totalLeads, called, verified, realPersons, successRate]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        totalLeads:
+          type: integer
+        called:
+          type: integer
+        verified:
+          type: integer
+        realPersons:
+          type: integer
+        successRate:
+          type: number
+
+    CampaignLiveState:
+      type: string
+      enum: [dialing, waiting, paused, idle, stopped]
+
+    CampaignLiveStatus:
+      type: object
+      required: [id, name, status, inCallingWindow, activeCalls, concurrentLimit, pendingLeads, state]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        inCallingWindow:
+          type: boolean
+        activeCalls:
+          type: integer
+        concurrentLimit:
+          type: integer
+        pendingLeads:
+          type: integer
+        state:
+          $ref: "#/components/schemas/CampaignLiveState"
+        nextResumeAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    LiveActivity:
+      type: object
+      required: [activeCalls, pendingLeads, activeCampaigns, schedulerRunning, schedulerIntervalMs, campaigns]
+      properties:
+        activeCalls:
+          type: integer
+        pendingLeads:
+          type: integer
+        activeCampaigns:
+          type: integer
+        schedulerRunning:
+          type: boolean
+        schedulerIntervalMs:
+          type: integer
+        lastSchedulerTickAt:
+          type: string
+          format: date-time
+          nullable: true
+        nextSchedulerTickAt:
+          type: string
+          format: date-time
+          nullable: true
+        campaigns:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignLiveStatus"
+
+    CallLog:
+      type: object
+      required: [id, leadId, firstName, lastName, company, phoneNumber, status, calledAt]
+      properties:
+        id:
+          type: integer
+        leadId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+        humanDetected:
+          type: ["boolean", "null"]
+        endedReason:
+          type: ["string", "null"]
+        callSummary:
+          type: ["string", "null"]
+        callDuration:
+          type: ["integer", "null"]
+        callCost:
+          type: ["number", "null"]
+        confidenceScore:
+          type: ["number", "null"]
+        calledAt:
+          type: string
+        campaignName:
+          type: ["string", "null"]
+
+    CallLogListResponse:
+      type: object
+      required: [logs, total, page, limit]
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/CallLog"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    GlobalSearchLeadHit:
+      type: object
+      required: [id, firstName, lastName, company, phoneNumber, status]
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+
+    GlobalSearchCallHit:
+      type: object
+      required: [id, leadId, firstName, lastName, company, phoneNumber, status, calledAt]
+      properties:
+        id:
+          type: integer
+        leadId:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+        calledAt:
+          type: string
+
+    GlobalSearchData:
+      type: object
+      required: [leads, results, callLogs]
+      properties:
+        leads:
+          type: array
+          items:
+            $ref: "#/components/schemas/GlobalSearchLeadHit"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/GlobalSearchCallHit"
+        callLogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/GlobalSearchCallHit"

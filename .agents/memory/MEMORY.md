@@ -1,0 +1,3 @@
+- [DB lib rebuild requirement](db-lib-rebuild.md) — must run `pnpm run typecheck:libs` after adding new schema files before building API server
+- [Auth token pattern](auth-token.md) — base64 JWT + localStorage; setAuthTokenGetter wired in main.tsx; SHA-256+static salt for passwords
+- [Shell seeding approach](shell-seeding.md) — use NODE_PATH pnpm virtual store path to run pg scripts from shell
