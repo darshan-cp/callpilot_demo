@@ -16,7 +16,8 @@
     "db:generate": "npm run generate -w @workspace/db",
     "db:seed": "npm run seed -w @workspace/db",
     "typecheck:libs": "tsc --build",
-    "typecheck": "npm run typecheck:libs && npm run typecheck -w @workspace/lead-verify -w @workspace/api-server -w @workspace/mockup-sandbox -w @workspace/scripts"
+    "typecheck": "npm run typecheck:libs && npm run typecheck -w @workspace/lead-verify -w @workspace/api-server -w @workspace/mockup-sandbox -w @workspace/scripts",
+    "test": "npm run typecheck"
   },
   "devDependencies": {
     "prettier": "^3.8.3",
