@@ -46,6 +46,7 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
     invalidNumbers,
     successRate: Math.round(successRate * 10) / 10,
     activeCampaigns,
+    title: "Test"
   });
 });
 
