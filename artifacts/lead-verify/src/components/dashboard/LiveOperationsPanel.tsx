@@ -118,7 +118,7 @@ export function LiveOperationsPanel() {
           </div>
         </div>
       ) : (
-        <>
+        <> 
           <div className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2.5 mb-3">
             <div className="flex items-center gap-2">
               <span

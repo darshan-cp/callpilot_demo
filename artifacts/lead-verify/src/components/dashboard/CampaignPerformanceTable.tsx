@@ -10,7 +10,7 @@ const CAMPAIGN_STATUS_STYLE: Record<string, string> = {
   draft: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
   active: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   paused: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  completed: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  completed: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
 };
 
 function CampaignStatusBadge({ status }: { status: string }) {
@@ -69,9 +69,7 @@ export function CampaignPerformanceTable() {
                 <TableCell className="text-right tabular-nums text-sm">{row.totalLeads}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{row.called}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm">{row.realPersons}</TableCell>
-                <TableCell className="text-right tabular-nums text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                  {row.verified}
-                </TableCell>
+                <TableCell className="text-right tabular-nums text-sm text-emerald-600 dark:text-emerald-400 font-medium">{row.verified}</TableCell>
                 <TableCell className="text-right tabular-nums text-sm font-semibold">{row.successRate}%</TableCell>
               </TableRow>
             ))
