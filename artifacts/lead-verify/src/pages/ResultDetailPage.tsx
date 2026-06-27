@@ -33,10 +33,10 @@ export function ResultDetailPage() {
         <div className="text-center py-12 text-muted-foreground">Result not found</div>
       ) : (
         <>
-          <div className="bg-card border border-border rounded-xl p-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-md">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
-                <h1 className="text-lg font-bold">{result.firstName} {result.lastName}</h1>
+                <h1 className="text-lg font-bold text-primary">{result.firstName} {result.lastName}</h1>
                 <p className="text-sm text-muted-foreground">{result.company}</p>
               </div>
               <StatusBadge status={result.status} />
@@ -50,7 +50,7 @@ export function ResultDetailPage() {
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-5 space-y-5">
+          <div className="bg-card border border-border rounded-xl p-5 space-y-5 shadow-md">
             <h2 className="text-sm font-semibold inline-flex items-center gap-1">
               Call Summary
               <InfoTooltip content={HELP.callSummary} />
@@ -108,7 +108,7 @@ function InfoRow({ icon: Icon, label, help, value, mono }: { icon: React.Element
 
 function StatCard({ label, help, value, icon: Icon, highlight, score }: { label: string; help: string; value: string; icon: React.ElementType; highlight?: boolean; score?: number }) {
   return (
-    <div className="bg-muted/40 rounded-lg p-3 border border-border">
+    <div className="bg-muted/40 rounded-lg p-3 border border-border shadow-sm">
       <StatLabel help={help} className="text-xs mb-2">
         <span className="inline-flex items-center gap-1.5">
           <Icon className="w-3.5 h-3.5 text-muted-foreground" />
